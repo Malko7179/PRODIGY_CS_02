@@ -1,40 +1,45 @@
 import cv2
-import numpy as np
+import argparse
 import os
 
-def encrypt_image(image_path, key, output_path="encrypted.png"):
+def encrypt(image_path, key):
     image = cv2.imread(image_path)
     if image is None:
-        print("Image not found.")
+        print("Image not found. Check the path.")
         return
 
     encrypted = (image + key) % 256
-    cv2.imwrite(output_path, encrypted)
-    print(f"Image encrypted and saved to {output_path}")
+    new_name = "encrypted_" + os.path.basename(image_path)
+    cv2.imwrite(new_name, encrypted)
+    print(f"Encrypted image saved as {new_name}")
 
-def decrypt_image(image_path, key, output_path="decrypted.png"):
+def decrypt(image_path, key):
     image = cv2.imread(image_path)
     if image is None:
-        print("Image not found.")
+        print("Image not found. Check the path.")
         return
 
     decrypted = (image - key) % 256
-    cv2.imwrite(output_path, decrypted)
-    print(f"Image decrypted and saved to {output_path}")
+    new_name = "decrypted_" + os.path.basename(image_path)
+    cv2.imwrite(new_name, decrypted)
+    print(f"Decrypted image saved as {new_name}")
 
 def main():
-    import argparse
-    parser = argparse.ArgumentParser(description="Simple Image Encryption Tool")
-    parser.add_argument("mode", choices=["encrypt", "decrypt"], help="Mode: encrypt or decrypt")
-    parser.add_argument("image", help="Path to the input image")
-    parser.add_argument("key", type=int, help="Numeric key for encryption/decryption")
-    parser.add_argument("--output", default=None, help="Optional output file name")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("action", choices=["encrypt", "decrypt"], help="What to do: encrypt or decrypt")
+    parser.add_argument("image_path", help="Path to your image")
+    parser.add_argument("key", type=int, help="A number between 0 and 255")
+
     args = parser.parse_args()
 
-    if args.mode == "encrypt":
-        encrypt_image(args.image, args.key, args.output or "encrypted.png")
+    if args.key < 0 or args.key > 255:
+        print("Key must be between 0 and 255")
+        return
+
+    if args.action == "encrypt":
+        encrypt(args.image_path, args.key)
     else:
-        decrypt_image(args.image, args.key, args.output or "decrypted.png")
+        decrypt(args.image_path, args.key)
 
 if __name__ == "__main__":
     main()
